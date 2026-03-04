@@ -4,11 +4,12 @@ Home Assistant blueprints for various devices
 
 ## Supported devices
 
-- IKEA BILRESA
-  - All-in-one: [![All-in-one](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-tomv79.yaml)
-  - Dual button: [![Dual button](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-dual-button-Skaronator.yaml)
-  - Scroll wheel: [![Scroll wheel](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-scroll-wheel-Skaronator.yaml)
-  - Scroll wheel (alt): [![Scroll wheel (alt)](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-scroll-wheel-jhol-byte.yaml)
+| Manufacturer | Device | Link for blueprint import |
+| --- | --- | --- |
+| IKEA | BILRESA All-in-one | [![All-in-one](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-tomv79.yaml) |
+| IKEA | BILRESA Dual button | [![Dual button](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-dual-button-Skaronator.yaml) |
+| IKEA | BILRESA Scroll wheel | [![Scroll wheel](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-scroll-wheel-Skaronator.yaml) |
+| IKEA | BILRESA Scroll wheel (alt) | [![Scroll wheel (alt)](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FACasset%2Fhome-assistant-blueprints%2Frefs%2Fheads%2Fmain%2Fikea%2Fbilresa-scroll-wheel-jhol-byte.yaml) |
 
 ## Credits/inspiration
 
