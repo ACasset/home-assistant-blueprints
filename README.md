@@ -1,4 +1,5 @@
 # Home Assistant blueprints
+
 Home Assistant blueprints for various devices
 
 ## Supported devices
