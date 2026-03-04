@@ -152,42 +152,42 @@ blueprint:
           selector:
             action: {}
 
-    thrid_dot:
-      name: Thrid Dot Actions
-      description: Actions for the thrid dot.
+    third_dot:
+      name: Third Dot Actions
+      description: Actions for the third dot.
       collapsed: true
       input:
-        thrid_scroll_left:
+        third_scroll_left:
           name: Scroll Left
           description: Action for scrolling left.
           default: []
           selector:
             action: {}
-        thrid_scroll_right:
+        third_scroll_right:
           name: Scroll Right
           description: Action for scrolling right.
           default: []
           selector:
             action: {}
-        thrid_single:
+        third_single:
           name: Single Press
           description: Action for Button 1 single press (multi_press_1).
           default: []
           selector:
             action: {}
-        thrid_double:
+        third_double:
           name: Double Press
           description: Action for Button 1 double press (multi_press_2).
           default: []
           selector:
             action: {}
-        thrid_long_press:
+        third_long_press:
           name: Long Press (on press)
           description: Action for Button 1 long press completion (long_press).
           default: []
           selector:
             action: {}
-        thrid_long_release:
+        third_long_release:
           name: Long Press (on release)
           description: Action for Button 1 long press completion (long_release).
           default: []
@@ -299,34 +299,34 @@ action:
               {{ trigger_id == 'button6' and press_type == 'long_release' }}
         sequence: !input second_long_release
 
-        # thrid dot
+        # third dot
       - conditions:
           - condition: template
             value_template: >
               {{ trigger_id == 'button7' }}
-        sequence: !input thrid_scroll_left
+        sequence: !input third_scroll_left
       - conditions:
           - condition: template
             value_template: >
               {{ trigger_id == 'button8' }}
-        sequence: !input thrid_scroll_right
+        sequence: !input third_scroll_right
       - conditions:
           - condition: template
             value_template: >
               {{ trigger_id == 'button9' and press_type == 'multi_press_1' }}
-        sequence: !input thrid_single
+        sequence: !input third_single
       - conditions:
           - condition: template
             value_template: >
               {{ trigger_id == 'button9' and press_type == 'multi_press_2' }}
-        sequence: !input thrid_double
+        sequence: !input third_double
       - conditions:
           - condition: template
             value_template: >
               {{ trigger_id == 'button9' and press_type == 'long_press' }}
-        sequence: !input thrid_long_press
+        sequence: !input third_long_press
       - conditions:
           - condition: template
             value_template: >
               {{ trigger_id == 'button9' and press_type == 'long_release' }}
-        sequence: !input thrid_long_release
+        sequence: !input third_long_release
