@@ -17,4 +17,4 @@ Home Assistant blueprints for various devices
 - [tomv79](https://github.com/tomv79/ikea-bilresa-blueprint/blob/main/blueprints/automation/ikea_bilresa_all_in_one.yaml)
 - [Skaronator](https://github.com/Skaronator/home-assistant-blueprints/blob/main/automation/)
 - [jhol-byte](https://gist.github.com/jhol-byte/b2731a4d2476f530d76b9ff409f7f3a4)
-- [aledziko](https://github.com/aledziko/HA-blueprints/blob/24a1999e0ac7a5f588e81f335992cff35676a1fc/IKEA/Matter/ikea-myggspray-e2494/ikea-myggspray-e2494-matter-motion-sensor.yaml)
+- [aledziko](https://github.com/aledziko/HA-blueprints/tree/main/IKEA/Matter/)
