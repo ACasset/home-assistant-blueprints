@@ -224,6 +224,7 @@ trigger_variables:
        | first
        | default('event.invalid_group3_scroll_right') }}
 
+  # BILRESA dual-button numbering pattern: top=1, bottom=2.
   var_remote_top_event: >-
     {% if var_remote_device %}
       {{ device_entities(var_remote_device)
