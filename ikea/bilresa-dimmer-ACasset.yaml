@@ -1,0 +1,345 @@
+mode: restart
+blueprint:
+  name: IKEA BILRESA Dimmer with Light Groups
+  author: ACasset
+  description: |
+    # IKEA BILRESA Dimmer with Light Groups
+
+    ## Features
+
+    Blueprint for IKEA BILRESA scroll wheel dimmer with preset brightness levels for 3 light groups.
+
+    ### Dimmer Behavior (per group)
+
+    * **Long press**: Turn off lights
+    * **Single click**: Turn on lights at brightness level 1
+    * **Double click**: Turn on lights at brightness level 2
+    * **Triple click**: Turn on lights at brightness level 3
+
+    ### Optional Remote
+
+    * **Single press**: Turn on all light groups
+    * **Long press**: Turn off all light groups
+
+  domain: automation
+  homeassistant:
+    min_version: 2025.12.0
+
+  input:
+    dimmer_setup:
+      name: ⚙️ Dimmer Setup
+      description: >
+        Select the event entities for the 3 groups on your IKEA BILRESA dimmer.
+      collapsed: false
+      input:
+        button1_event:
+          name: Group 1 - Button Event Entity
+          description: >
+            Select the event entity for the dimmer's group 1 button.
+          selector: &button_event_selector
+            entity:
+              filter:
+                domain: event
+                device_class: button
+
+        button2_event:
+          name: Group 2 - Button Event Entity
+          description: >
+            Select the event entity for the dimmer's group 2 button.
+          selector: *button_event_selector
+
+        button3_event:
+          name: Group 3 - Button Event Entity
+          description: >
+            Select the event entity for the dimmer's group 3 button.
+          selector: *button_event_selector
+
+    lights_setup:
+      name: 💡 Light Groups
+      description: >
+        Select lights or light groups for each dimmer group.
+      collapsed: false
+      input:
+        group1_lights:
+          name: Group 1 - Lights
+          description: >
+            Select lights or light groups for group 1.
+          selector:
+            target:
+              entity:
+                domain: light
+
+        group2_lights:
+          name: Group 2 - Lights
+          description: >
+            Select lights or light groups for group 2.
+          selector:
+            target:
+              entity:
+                domain: light
+
+        group3_lights:
+          name: Group 3 - Lights
+          description: >
+            Select lights or light groups for group 3.
+          selector:
+            target:
+              entity:
+                domain: light
+
+    brightness_setup:
+      name: 🔆 Brightness Levels
+      description: >
+        Define the 3 brightness percentages for single, double, and triple click.
+      collapsed: false
+      input:
+        brightness_1:
+          name: Brightness Level 1 (single click)
+          description: Brightness percentage applied on single click.
+          default: 30
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+
+        brightness_2:
+          name: Brightness Level 2 (double click)
+          description: Brightness percentage applied on double click.
+          default: 60
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+
+        brightness_3:
+          name: Brightness Level 3 (triple click)
+          description: Brightness percentage applied on triple click.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+
+    remote_setup:
+      name: 🎮 Optional Remote
+      description: >
+        Optionally select a remote to turn on/off all light groups at once.
+      collapsed: true
+      input:
+        remote_event:
+          name: Remote - Event Entity (optional)
+          description: >
+            Select an optional remote event entity.
+            Single press turns on all lights, long press turns off all lights.
+            Leave empty if not using a remote.
+          default: ""
+          selector:
+            entity:
+              filter:
+                domain: event
+                device_class: button
+
+# ===================================================================
+# TRIGGERS
+# ===================================================================
+
+trigger:
+  # Dimmer buttons (required)
+  - platform: state
+    id: button1
+    entity_id: !input button1_event
+  - platform: state
+    id: button2
+    entity_id: !input button2_event
+  - platform: state
+    id: button3
+    entity_id: !input button3_event
+  # Optional remote (uses state_changed event to safely handle empty entity)
+  - platform: event
+    id: remote
+    event_type: state_changed
+    event_data:
+      entity_id: !input remote_event
+
+# ===================================================================
+# CONDITIONS
+# ===================================================================
+
+condition:
+  - condition: template
+    value_template: >
+      {% if trigger.platform == 'state' %}
+        {{ trigger.from_state.state not in ['unknown', 'unavailable'] and
+           trigger.to_state.state not in ['unknown', 'unavailable'] and
+           trigger.from_state.state != trigger.to_state.state }}
+      {% else %}
+        true
+      {% endif %}
+
+# ===================================================================
+# ACTIONS
+# ===================================================================
+
+action:
+  - variables:
+      trigger_id: "{{ trigger.id }}"
+      press_type: >-
+        {% if trigger.platform == 'state' %}
+          {{ trigger.to_state.attributes.event_type }}
+        {% elif trigger.platform == 'event' %}
+          {% set ns = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
+          {{ ns.attributes.event_type | default('') if ns is not none else '' }}
+        {% else %}
+          
+        {% endif %}
+
+  - choose:
+      # =============================================
+      # Group 1 - Dimmer Actions
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button1' and press_type == 'multi_press_1' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group1_lights
+            data:
+              brightness_pct: !input brightness_1
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button1' and press_type == 'multi_press_2' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group1_lights
+            data:
+              brightness_pct: !input brightness_2
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button1' and press_type == 'multi_press_3' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group1_lights
+            data:
+              brightness_pct: !input brightness_3
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button1' and press_type == 'long_press' }}"
+        sequence:
+          - action: light.turn_off
+            target: !input group1_lights
+
+      # =============================================
+      # Group 2 - Dimmer Actions
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button2' and press_type == 'multi_press_1' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group2_lights
+            data:
+              brightness_pct: !input brightness_1
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button2' and press_type == 'multi_press_2' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group2_lights
+            data:
+              brightness_pct: !input brightness_2
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button2' and press_type == 'multi_press_3' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group2_lights
+            data:
+              brightness_pct: !input brightness_3
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button2' and press_type == 'long_press' }}"
+        sequence:
+          - action: light.turn_off
+            target: !input group2_lights
+
+      # =============================================
+      # Group 3 - Dimmer Actions
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button3' and press_type == 'multi_press_1' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group3_lights
+            data:
+              brightness_pct: !input brightness_1
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button3' and press_type == 'multi_press_2' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group3_lights
+            data:
+              brightness_pct: !input brightness_2
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button3' and press_type == 'multi_press_3' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group3_lights
+            data:
+              brightness_pct: !input brightness_3
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'button3' and press_type == 'long_press' }}"
+        sequence:
+          - action: light.turn_off
+            target: !input group3_lights
+
+      # =============================================
+      # Optional Remote - Turn On All Groups
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'remote' and press_type == 'multi_press_1' }}"
+        sequence:
+          - parallel:
+              - action: light.turn_on
+                target: !input group1_lights
+              - action: light.turn_on
+                target: !input group2_lights
+              - action: light.turn_on
+                target: !input group3_lights
+
+      # =============================================
+      # Optional Remote - Turn Off All Groups
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'remote' and press_type == 'long_press' }}"
+        sequence:
+          - parallel:
+              - action: light.turn_off
+                target: !input group1_lights
+              - action: light.turn_off
+                target: !input group2_lights
+              - action: light.turn_off
+                target: !input group3_lights
