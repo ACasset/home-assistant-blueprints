@@ -325,7 +325,7 @@ action:
           - action: light.turn_on
             target: !input group1_lights
             data:
-              brightness_step_pct: "{{ scroll_step_pct | int(5) }}"
+              brightness_step_pct: "{{ scroll_step_pct | int }}"
 
       - conditions:
           - condition: template
@@ -334,7 +334,7 @@ action:
           - action: light.turn_on
             target: !input group1_lights
             data:
-              brightness_step_pct: "{{ -1 * (scroll_step_pct | int(5)) }}"
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) }}"
 
       # =============================================
       # Group 2 - Dimmer Actions
@@ -383,7 +383,7 @@ action:
           - action: light.turn_on
             target: !input group2_lights
             data:
-              brightness_step_pct: "{{ scroll_step_pct | int(5) }}"
+              brightness_step_pct: "{{ scroll_step_pct | int }}"
 
       - conditions:
           - condition: template
@@ -392,7 +392,7 @@ action:
           - action: light.turn_on
             target: !input group2_lights
             data:
-              brightness_step_pct: "{{ -1 * (scroll_step_pct | int(5)) }}"
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) }}"
 
       # =============================================
       # Group 3 - Dimmer Actions
@@ -441,7 +441,7 @@ action:
           - action: light.turn_on
             target: !input group3_lights
             data:
-              brightness_step_pct: "{{ scroll_step_pct | int(5) }}"
+              brightness_step_pct: "{{ scroll_step_pct | int }}"
 
       - conditions:
           - condition: template
@@ -450,7 +450,7 @@ action:
           - action: light.turn_on
             target: !input group3_lights
             data:
-              brightness_step_pct: "{{ -1 * (scroll_step_pct | int(5)) }}"
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) }}"
 
       # =============================================
       # Optional Remote - Turn On All Groups
