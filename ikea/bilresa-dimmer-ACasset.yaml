@@ -199,7 +199,7 @@ action:
           {% set ns = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
           {{ ns.attributes.event_type | default('') if ns is not none else '' }}
         {% else %}
-          
+          {{ '' }}
         {% endif %}
 
   - choose:
