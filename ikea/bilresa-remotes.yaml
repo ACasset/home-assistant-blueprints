@@ -339,16 +339,6 @@ action:
         {% set ns = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
         {{ ns.attributes.event_type | default('') if ns is not none else '' }}
       scroll_step_pct: !input scroll_step
-      remote_top_brightness_pct: >-
-        {% if press_type == 'multi_press_1' %}
-          {{ brightness_level_1 }}
-        {% elif press_type == 'multi_press_2' %}
-          {{ brightness_level_2 }}
-        {% elif press_type == 'multi_press_3' %}
-          {{ brightness_level_3 }}
-        {% else %}
-          0
-        {% endif %}
 
   - choose:
       # =============================================
@@ -532,6 +522,15 @@ action:
           - condition: template
             value_template: "{{ trigger_id == 'remote_top' and press_type in ['multi_press_1', 'multi_press_2', 'multi_press_3'] }}"
         sequence:
+          - variables:
+              remote_top_brightness_pct: >-
+                {% if press_type == 'multi_press_1' %}
+                  {{ brightness_level_1 }}
+                {% elif press_type == 'multi_press_2' %}
+                  {{ brightness_level_2 }}
+                {% else %}
+                  {{ brightness_level_3 }}
+                {% endif %}
           - action: light.turn_on
             target: !input group1_lights
             data:
