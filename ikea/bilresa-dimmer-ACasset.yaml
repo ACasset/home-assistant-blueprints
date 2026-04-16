@@ -1,4 +1,5 @@
-mode: restart
+mode: queued
+max: 10
 blueprint:
   name: IKEA BILRESA Dimmer with Light Groups
   author: ACasset
@@ -15,6 +16,8 @@ blueprint:
     * **Single click**: Turn on lights at brightness level 1
     * **Double click**: Turn on lights at brightness level 2
     * **Triple click**: Turn on lights at brightness level 3
+    * **Scroll wheel right**: Increase brightness by configurable step %
+    * **Scroll wheel left**: Decrease brightness by configurable step %
 
     ### Optional Remote
 
@@ -29,7 +32,8 @@ blueprint:
     dimmer_setup:
       name: ⚙️ Dimmer Setup
       description: >
-        Select the event entities for the 3 groups on your IKEA BILRESA dimmer.
+        Select the event entities for the 3 groups on your IKEA BILRESA dimmer
+        (button + scroll wheel left/right per group).
       collapsed: false
       input:
         button1_event:
@@ -42,16 +46,52 @@ blueprint:
                 domain: event
                 device_class: button
 
+        scroll1_left_event:
+          name: Group 1 - Scroll Left Event Entity
+          description: >
+            Select the event entity for group 1 scroll wheel left rotation.
+          selector: *button_event_selector
+
+        scroll1_right_event:
+          name: Group 1 - Scroll Right Event Entity
+          description: >
+            Select the event entity for group 1 scroll wheel right rotation.
+          selector: *button_event_selector
+
         button2_event:
           name: Group 2 - Button Event Entity
           description: >
             Select the event entity for the dimmer's group 2 button.
           selector: *button_event_selector
 
+        scroll2_left_event:
+          name: Group 2 - Scroll Left Event Entity
+          description: >
+            Select the event entity for group 2 scroll wheel left rotation.
+          selector: *button_event_selector
+
+        scroll2_right_event:
+          name: Group 2 - Scroll Right Event Entity
+          description: >
+            Select the event entity for group 2 scroll wheel right rotation.
+          selector: *button_event_selector
+
         button3_event:
           name: Group 3 - Button Event Entity
           description: >
             Select the event entity for the dimmer's group 3 button.
+          selector: *button_event_selector
+
+        scroll3_left_event:
+          name: Group 3 - Scroll Left Event Entity
+          description: >
+            Select the event entity for group 3 scroll wheel left rotation.
+          selector: *button_event_selector
+
+        scroll3_right_event:
+          name: Group 3 - Scroll Right Event Entity
+          description: >
+            Select the event entity for group 3 scroll wheel right rotation.
           selector: *button_event_selector
 
     lights_setup:
@@ -90,7 +130,8 @@ blueprint:
     brightness_setup:
       name: 🔆 Brightness Levels
       description: >
-        Define the 3 brightness percentages for single, double, and triple click.
+        Define the 3 brightness percentages for single, double, and triple click,
+        and the scroll wheel step.
       collapsed: false
       input:
         brightness_1:
@@ -129,6 +170,20 @@ blueprint:
               unit_of_measurement: "%"
               mode: slider
 
+        scroll_step:
+          name: Scroll Wheel Step
+          description: >
+            Brightness percentage change per scroll wheel tick.
+            Scroll right increases, scroll left decreases.
+          default: 5
+          selector:
+            number:
+              min: 1
+              max: 25
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+
     remote_setup:
       name: 🎮 Optional Remote
       description: >
@@ -163,6 +218,25 @@ trigger:
   - platform: state
     id: button3
     entity_id: !input button3_event
+  # Scroll wheel events (required)
+  - platform: state
+    id: scroll1_left
+    entity_id: !input scroll1_left_event
+  - platform: state
+    id: scroll1_right
+    entity_id: !input scroll1_right_event
+  - platform: state
+    id: scroll2_left
+    entity_id: !input scroll2_left_event
+  - platform: state
+    id: scroll2_right
+    entity_id: !input scroll2_right_event
+  - platform: state
+    id: scroll3_left
+    entity_id: !input scroll3_left_event
+  - platform: state
+    id: scroll3_right
+    entity_id: !input scroll3_right_event
   # Optional remote (uses state_changed event to safely handle empty entity)
   - platform: event
     id: remote
@@ -201,6 +275,7 @@ action:
         {% else %}
           {{ '' }}
         {% endif %}
+      scroll_step_pct: !input scroll_step
 
   - choose:
       # =============================================
@@ -241,6 +316,27 @@ action:
             target: !input group1_lights
 
       # =============================================
+      # Group 1 - Scroll Wheel
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'scroll1_right' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group1_lights
+            data:
+              brightness_step_pct: "{{ scroll_step_pct | int(5) }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'scroll1_left' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group1_lights
+            data:
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int(5)) }}"
+
+      # =============================================
       # Group 2 - Dimmer Actions
       # =============================================
       - conditions:
@@ -278,6 +374,27 @@ action:
             target: !input group2_lights
 
       # =============================================
+      # Group 2 - Scroll Wheel
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'scroll2_right' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group2_lights
+            data:
+              brightness_step_pct: "{{ scroll_step_pct | int(5) }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'scroll2_left' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group2_lights
+            data:
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int(5)) }}"
+
+      # =============================================
       # Group 3 - Dimmer Actions
       # =============================================
       - conditions:
@@ -313,6 +430,27 @@ action:
         sequence:
           - action: light.turn_off
             target: !input group3_lights
+
+      # =============================================
+      # Group 3 - Scroll Wheel
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'scroll3_right' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group3_lights
+            data:
+              brightness_step_pct: "{{ scroll_step_pct | int(5) }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'scroll3_left' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group3_lights
+            data:
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int(5)) }}"
 
       # =============================================
       # Optional Remote - Turn On All Groups
