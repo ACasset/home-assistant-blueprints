@@ -2,7 +2,7 @@ mode: queued
 max: 10
 blueprint:
   name: IKEA BILRESA Dimmer with Light Groups
-  author: ikea-remote
+  author: ACasset
   description: |
     # IKEA BILRESA Dimmer with Light Groups
 
