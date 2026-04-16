@@ -21,8 +21,8 @@ blueprint:
 
     ### Optional Remote
 
-    * **Single press**: Turn on all light groups
-    * **Long press**: Turn off all light groups
+    * **Top button**: 1/2/3 clicks turn on all light groups at brightness level 1/2/3
+    * **Bottom button**: Single click turns off all light groups
 
   domain: automation
   homeassistant:
@@ -151,7 +151,8 @@ blueprint:
           name: Remote - Device (optional)
           description: >
             Select an optional IKEA BILRESA device.
-            Single press turns on all lights, long press turns off all lights.
+            Top button (1/2/3 clicks) turns on all lights with brightness level 1/2/3.
+            Bottom button (single click) turns off all lights.
             Leave empty if not using a remote.
           default: ""
           selector:
@@ -223,10 +224,19 @@ trigger_variables:
        | first
        | default('event.invalid_group3_scroll_right') }}
 
-  var_remote_event: >-
+  var_remote_top_event: >-
     {% if var_remote_device %}
       {{ device_entities(var_remote_device)
-         | select('match', '^event\.[a-z0-9_]+_3(?:$|_.*$)')
+         | select('match', '^event\.[a-z0-9_]+_1(?:$|_.*$)')
+         | list
+         | first
+         | default('') }}
+    {% endif %}
+
+  var_remote_bottom_event: >-
+    {% if var_remote_device %}
+      {{ device_entities(var_remote_device)
+         | select('match', '^event\.[a-z0-9_]+_2(?:$|_.*$)')
          | list
          | first
          | default('') }}
@@ -286,10 +296,15 @@ trigger:
       entity_id: "{{ var_scroll3_right_event | trim }}"
   # Optional remote (uses state_changed event to safely handle empty entity)
   - platform: event
-    id: remote
+    id: remote_top
     event_type: state_changed
     event_data:
-      entity_id: "{{ var_remote_event | trim }}"
+      entity_id: "{{ var_remote_top_event | trim }}"
+  - platform: event
+    id: remote_bottom
+    event_type: state_changed
+    event_data:
+      entity_id: "{{ var_remote_bottom_event | trim }}"
 
 # ===================================================================
 # CONDITIONS
@@ -496,33 +511,89 @@ action:
               brightness_step_pct: "{{ -1 * (scroll_step_pct | int) }}"
 
       # =============================================
-      # Optional Remote - Turn On All Groups
+      # Optional Remote Top Button - Turn On All Groups
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'remote' and press_type == 'multi_press_1' }}"
+            value_template: "{{ trigger_id == 'remote_top' and press_type == 'multi_press_1' }}"
         sequence:
           - action: light.turn_on
             target: !input group1_lights
+            data:
+              brightness_pct: !input brightness_1
           - if:
               - condition: template
                 value_template: "{{ group2_target | length > 0 }}"
             then:
               - action: light.turn_on
                 target: !input group2_lights
+                data:
+                  brightness_pct: !input brightness_1
           - if:
               - condition: template
                 value_template: "{{ group3_target | length > 0 }}"
             then:
               - action: light.turn_on
                 target: !input group3_lights
+                data:
+                  brightness_pct: !input brightness_1
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'remote_top' and press_type == 'multi_press_2' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group1_lights
+            data:
+              brightness_pct: !input brightness_2
+          - if:
+              - condition: template
+                value_template: "{{ group2_target | length > 0 }}"
+            then:
+              - action: light.turn_on
+                target: !input group2_lights
+                data:
+                  brightness_pct: !input brightness_2
+          - if:
+              - condition: template
+                value_template: "{{ group3_target | length > 0 }}"
+            then:
+              - action: light.turn_on
+                target: !input group3_lights
+                data:
+                  brightness_pct: !input brightness_2
+
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger_id == 'remote_top' and press_type == 'multi_press_3' }}"
+        sequence:
+          - action: light.turn_on
+            target: !input group1_lights
+            data:
+              brightness_pct: !input brightness_3
+          - if:
+              - condition: template
+                value_template: "{{ group2_target | length > 0 }}"
+            then:
+              - action: light.turn_on
+                target: !input group2_lights
+                data:
+                  brightness_pct: !input brightness_3
+          - if:
+              - condition: template
+                value_template: "{{ group3_target | length > 0 }}"
+            then:
+              - action: light.turn_on
+                target: !input group3_lights
+                data:
+                  brightness_pct: !input brightness_3
 
       # =============================================
-      # Optional Remote - Turn Off All Groups
+      # Optional Remote Bottom Button - Turn Off All Groups
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'remote' and press_type == 'long_press' }}"
+            value_template: "{{ trigger_id == 'remote_bottom' and press_type == 'multi_press_1' }}"
         sequence:
           - action: light.turn_off
             target: !input group1_lights
