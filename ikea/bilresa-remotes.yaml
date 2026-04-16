@@ -1,10 +1,10 @@
 mode: queued
 max: 10
 blueprint:
-  name: IKEA bilresa-remotes
+  name: IKEA BILRESA-remotes
   author: ACasset
   description: |
-    # IKEA bilresa-remotes
+    # IKEA BILRESA-remotes
 
     ## Features
 
