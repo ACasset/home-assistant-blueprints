@@ -224,7 +224,8 @@ trigger_variables:
        | first
        | default('event.invalid_group3_scroll_right') }}
 
-  # BILRESA dual-button numbering pattern: top=1, bottom=2.
+  # BILRESA dual-button numbering pattern in event entity suffixes:
+  # top button => ..._1, bottom button => ..._2.
   var_remote_top_event: >-
     {% if var_remote_device %}
       {{ device_entities(var_remote_device)
@@ -331,10 +332,23 @@ action:
       trigger_id: "{{ trigger.id }}"
       group2_target: !input group2_lights
       group3_target: !input group3_lights
+      brightness_level_1: !input brightness_1
+      brightness_level_2: !input brightness_2
+      brightness_level_3: !input brightness_3
       press_type: >-
         {% set ns = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
         {{ ns.attributes.event_type | default('') if ns is not none else '' }}
       scroll_step_pct: !input scroll_step
+      remote_top_brightness_pct: >-
+        {% if press_type == 'multi_press_1' %}
+          {{ brightness_level_1 }}
+        {% elif press_type == 'multi_press_2' %}
+          {{ brightness_level_2 }}
+        {% elif press_type == 'multi_press_3' %}
+          {{ brightness_level_3 }}
+        {% else %}
+          0
+        {% endif %}
 
   - choose:
       # =============================================
@@ -516,12 +530,12 @@ action:
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'remote_top' and press_type == 'multi_press_1' }}"
+            value_template: "{{ trigger_id == 'remote_top' and press_type in ['multi_press_1', 'multi_press_2', 'multi_press_3'] }}"
         sequence:
           - action: light.turn_on
             target: !input group1_lights
             data:
-              brightness_pct: !input brightness_1
+              brightness_pct: "{{ remote_top_brightness_pct | int }}"
           - if:
               - condition: template
                 value_template: "{{ group2_target | length > 0 }}"
@@ -529,7 +543,7 @@ action:
               - action: light.turn_on
                 target: !input group2_lights
                 data:
-                  brightness_pct: !input brightness_1
+                  brightness_pct: "{{ remote_top_brightness_pct | int }}"
           - if:
               - condition: template
                 value_template: "{{ group3_target | length > 0 }}"
@@ -537,57 +551,7 @@ action:
               - action: light.turn_on
                 target: !input group3_lights
                 data:
-                  brightness_pct: !input brightness_1
-
-      - conditions:
-          - condition: template
-            value_template: "{{ trigger_id == 'remote_top' and press_type == 'multi_press_2' }}"
-        sequence:
-          - action: light.turn_on
-            target: !input group1_lights
-            data:
-              brightness_pct: !input brightness_2
-          - if:
-              - condition: template
-                value_template: "{{ group2_target | length > 0 }}"
-            then:
-              - action: light.turn_on
-                target: !input group2_lights
-                data:
-                  brightness_pct: !input brightness_2
-          - if:
-              - condition: template
-                value_template: "{{ group3_target | length > 0 }}"
-            then:
-              - action: light.turn_on
-                target: !input group3_lights
-                data:
-                  brightness_pct: !input brightness_2
-
-      - conditions:
-          - condition: template
-            value_template: "{{ trigger_id == 'remote_top' and press_type == 'multi_press_3' }}"
-        sequence:
-          - action: light.turn_on
-            target: !input group1_lights
-            data:
-              brightness_pct: !input brightness_3
-          - if:
-              - condition: template
-                value_template: "{{ group2_target | length > 0 }}"
-            then:
-              - action: light.turn_on
-                target: !input group2_lights
-                data:
-                  brightness_pct: !input brightness_3
-          - if:
-              - condition: template
-                value_template: "{{ group3_target | length > 0 }}"
-            then:
-              - action: light.turn_on
-                target: !input group3_lights
-                data:
-                  brightness_pct: !input brightness_3
+                  brightness_pct: "{{ remote_top_brightness_pct | int }}"
 
       # =============================================
       # Optional Remote Bottom Button - Turn Off All Groups
