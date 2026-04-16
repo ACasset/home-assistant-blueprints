@@ -42,8 +42,8 @@ blueprint:
           selector: &bilresa_device_selector
             device:
               filter:
-                manufacturer: IKEA
-                model: BILRESA
+                manufacturer: IKEA of Sweden
+                model: BILRESA scroll wheel (32768)
 
         group2_device:
           name: Group 2 - Dimmer Device
@@ -163,8 +163,8 @@ blueprint:
           selector:
             device:
               filter:
-                manufacturer: IKEA
-                model: BILRESA
+                manufacturer: IKEA of Sweden
+                model: BILRESA dual button (32769)
 
 trigger_variables:
   var_group1_device: !input group1_device
