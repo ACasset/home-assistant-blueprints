@@ -2,7 +2,7 @@ mode: queued
 max: 10
 blueprint:
   name: IKEA BILRESA Dimmer with Light Groups
-  author: ACasset
+  author: ikea-remote
   description: |
     # IKEA BILRESA Dimmer with Light Groups
 
@@ -32,67 +32,30 @@ blueprint:
     dimmer_setup:
       name: ⚙️ Dimmer Setup
       description: >
-        Select the event entities for the 3 groups on your IKEA BILRESA dimmer
-        (button + scroll wheel left/right per group).
+        Select the 3 IKEA BILRESA dimmer devices (one per group).
       collapsed: false
       input:
-        button1_event:
-          name: Group 1 - Button Event Entity
+        group1_device:
+          name: Group 1 - Dimmer Device
           description: >
-            Select the event entity for the dimmer's group 1 button.
-          selector: &button_event_selector
-            entity:
+            Select the IKEA BILRESA dimmer device used for group 1.
+          selector: &bilresa_device_selector
+            device:
               filter:
-                domain: event
-                device_class: button
+                manufacturer: IKEA
+                model: BILRESA
 
-        scroll1_left_event:
-          name: Group 1 - Scroll Left Event Entity
+        group2_device:
+          name: Group 2 - Dimmer Device
           description: >
-            Select the event entity for group 1 scroll wheel left rotation.
-          selector: *button_event_selector
+            Select the IKEA BILRESA dimmer device used for group 2.
+          selector: *bilresa_device_selector
 
-        scroll1_right_event:
-          name: Group 1 - Scroll Right Event Entity
+        group3_device:
+          name: Group 3 - Dimmer Device
           description: >
-            Select the event entity for group 1 scroll wheel right rotation.
-          selector: *button_event_selector
-
-        button2_event:
-          name: Group 2 - Button Event Entity
-          description: >
-            Select the event entity for the dimmer's group 2 button.
-          selector: *button_event_selector
-
-        scroll2_left_event:
-          name: Group 2 - Scroll Left Event Entity
-          description: >
-            Select the event entity for group 2 scroll wheel left rotation.
-          selector: *button_event_selector
-
-        scroll2_right_event:
-          name: Group 2 - Scroll Right Event Entity
-          description: >
-            Select the event entity for group 2 scroll wheel right rotation.
-          selector: *button_event_selector
-
-        button3_event:
-          name: Group 3 - Button Event Entity
-          description: >
-            Select the event entity for the dimmer's group 3 button.
-          selector: *button_event_selector
-
-        scroll3_left_event:
-          name: Group 3 - Scroll Left Event Entity
-          description: >
-            Select the event entity for group 3 scroll wheel left rotation.
-          selector: *button_event_selector
-
-        scroll3_right_event:
-          name: Group 3 - Scroll Right Event Entity
-          description: >
-            Select the event entity for group 3 scroll wheel right rotation.
-          selector: *button_event_selector
+            Select the IKEA BILRESA dimmer device used for group 3.
+          selector: *bilresa_device_selector
 
     lights_setup:
       name: 💡 Light Groups
@@ -190,18 +153,100 @@ blueprint:
         Optionally select a remote to turn on/off all light groups at once.
       collapsed: true
       input:
-        remote_event:
-          name: Remote - Event Entity (optional)
+        remote_device:
+          name: Remote - Device (optional)
           description: >
-            Select an optional remote event entity.
+            Select an optional IKEA BILRESA device.
             Single press turns on all lights, long press turns off all lights.
             Leave empty if not using a remote.
           default: ""
           selector:
-            entity:
+            device:
               filter:
-                domain: event
-                device_class: button
+                manufacturer: IKEA
+                model: BILRESA
+
+trigger_variables:
+  var_group1_device: !input group1_device
+  var_group2_device: !input group2_device
+  var_group3_device: !input group3_device
+  var_remote_device: !input remote_device
+
+  var_button1_event: >-
+    {% for item in device_entities(var_group1_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_3.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll1_left_event: >-
+    {% for item in device_entities(var_group1_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_2.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll1_right_event: >-
+    {% for item in device_entities(var_group1_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_1.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+
+  var_button2_event: >-
+    {% for item in device_entities(var_group2_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_6.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll2_left_event: >-
+    {% for item in device_entities(var_group2_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_5.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll2_right_event: >-
+    {% for item in device_entities(var_group2_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_4.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+
+  var_button3_event: >-
+    {% for item in device_entities(var_group3_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_9.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll3_left_event: >-
+    {% for item in device_entities(var_group3_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_8.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll3_right_event: >-
+    {% for item in device_entities(var_group3_device) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_7.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+
+  var_remote_event: >-
+    {% if var_remote_device != '' %}
+      {% for item in device_entities(var_remote_device) %}
+      {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_1.*$') %}
+      {% if (match | length) > 0 %}
+        {{ match[0] }}
+      {% endif %}
+      {% endfor %}
+    {% endif %}
 
 # ===================================================================
 # TRIGGERS
@@ -211,38 +256,38 @@ trigger:
   # Dimmer buttons (required)
   - platform: state
     id: button1
-    entity_id: !input button1_event
+    entity_id: "{{ var_button1_event | trim }}"
   - platform: state
     id: button2
-    entity_id: !input button2_event
+    entity_id: "{{ var_button2_event | trim }}"
   - platform: state
     id: button3
-    entity_id: !input button3_event
+    entity_id: "{{ var_button3_event | trim }}"
   # Scroll wheel events (required)
   - platform: state
     id: scroll1_left
-    entity_id: !input scroll1_left_event
+    entity_id: "{{ var_scroll1_left_event | trim }}"
   - platform: state
     id: scroll1_right
-    entity_id: !input scroll1_right_event
+    entity_id: "{{ var_scroll1_right_event | trim }}"
   - platform: state
     id: scroll2_left
-    entity_id: !input scroll2_left_event
+    entity_id: "{{ var_scroll2_left_event | trim }}"
   - platform: state
     id: scroll2_right
-    entity_id: !input scroll2_right_event
+    entity_id: "{{ var_scroll2_right_event | trim }}"
   - platform: state
     id: scroll3_left
-    entity_id: !input scroll3_left_event
+    entity_id: "{{ var_scroll3_left_event | trim }}"
   - platform: state
     id: scroll3_right
-    entity_id: !input scroll3_right_event
+    entity_id: "{{ var_scroll3_right_event | trim }}"
   # Optional remote (uses state_changed event to safely handle empty entity)
   - platform: event
     id: remote
     event_type: state_changed
     event_data:
-      entity_id: !input remote_event
+      entity_id: "{{ var_remote_event | trim }}"
 
 # ===================================================================
 # CONDITIONS
