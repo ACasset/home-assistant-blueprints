@@ -234,7 +234,7 @@ trigger_variables:
   var_remote_event: >-
     {% if var_remote_device %}
       {{ device_entities(var_remote_device)
-         | select('match', '^event\.[a-z0-9_]+_1(?:$|_.*$)')
+         | select('match', '^event\.[a-z0-9_]+_3(?:$|_.*$)')
          | list
          | first
          | default('') }}
