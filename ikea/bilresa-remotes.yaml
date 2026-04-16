@@ -1,10 +1,10 @@
 mode: queued
 max: 10
 blueprint:
-  name: IKEA BILRESA Dimmer with Light Groups
+  name: IKEA bilresa-remotes
   author: ACasset
   description: |
-    # IKEA BILRESA Dimmer with Light Groups
+    # IKEA bilresa-remotes
 
     ## Features
 
@@ -32,30 +32,20 @@ blueprint:
     dimmer_setup:
       name: ⚙️ Dimmer Setup
       description: >
-        Select the 3 IKEA BILRESA dimmer devices (one per group).
+        Select one IKEA BILRESA scroll wheel device.
+        Channels 1, 2 and 3 are automatically mapped from this device.
       collapsed: false
       input:
-        group1_device:
-          name: Group 1 - Dimmer Device
+        scroll_wheel_device:
+          name: Scroll Wheel Device
           description: >
-            Select the IKEA BILRESA dimmer device used for group 1.
-          selector: &bilresa_device_selector
+            Select one IKEA BILRESA scroll wheel device.
+            The blueprint automatically maps groups 1/2/3 to channels 1/2/3.
+          selector:
             device:
               filter:
                 manufacturer: IKEA of Sweden
                 model: BILRESA scroll wheel
-
-        group2_device:
-          name: Group 2 - Dimmer Device
-          description: >
-            Select the IKEA BILRESA dimmer device used for group 2.
-          selector: *bilresa_device_selector
-
-        group3_device:
-          name: Group 3 - Dimmer Device
-          description: >
-            Select the IKEA BILRESA dimmer device used for group 3.
-          selector: *bilresa_device_selector
 
     lights_setup:
       name: 💡 Light Groups
@@ -167,65 +157,63 @@ blueprint:
                 model: BILRESA dual button
 
 trigger_variables:
-  var_group1_device: !input group1_device
-  var_group2_device: !input group2_device
-  var_group3_device: !input group3_device
+  var_scroll_wheel_device: !input scroll_wheel_device
   var_remote_device: !input remote_device
 
   # BILRESA numbering pattern: group 1 => right=1 left=2 button=3,
   # group 2 => right=4 left=5 button=6, group 3 => right=7 left=8 button=9.
   var_button1_event: >-
-    {{ device_entities(var_group1_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_3(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group1_button') }}
   var_scroll1_left_event: >-
-    {{ device_entities(var_group1_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_2(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group1_scroll_left') }}
   var_scroll1_right_event: >-
-    {{ device_entities(var_group1_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_1(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group1_scroll_right') }}
 
   var_button2_event: >-
-    {{ device_entities(var_group2_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_6(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group2_button') }}
   var_scroll2_left_event: >-
-    {{ device_entities(var_group2_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_5(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group2_scroll_left') }}
   var_scroll2_right_event: >-
-    {{ device_entities(var_group2_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_4(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group2_scroll_right') }}
 
   var_button3_event: >-
-    {{ device_entities(var_group3_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_9(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group3_button') }}
   var_scroll3_left_event: >-
-    {{ device_entities(var_group3_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_8(?:$|_.*$)')
        | list
        | first
        | default('event.invalid_group3_scroll_left') }}
   var_scroll3_right_event: >-
-    {{ device_entities(var_group3_device)
+    {{ device_entities(var_scroll_wheel_device)
        | select('match', '^event\.[a-z0-9_]+_7(?:$|_.*$)')
        | list
        | first
