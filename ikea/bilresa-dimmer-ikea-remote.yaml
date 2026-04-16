@@ -173,79 +173,69 @@ trigger_variables:
   var_remote_device: !input remote_device
 
   var_button1_event: >-
-    {% for item in device_entities(var_group1_device) %}
-    {% set match = item | regex_findall(find='^event\..+_3.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group1_device)
+       | select('match', '^event\.[a-z0-9_]+_3.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
   var_scroll1_left_event: >-
-    {% for item in device_entities(var_group1_device) %}
-    {% set match = item | regex_findall(find='^event\..+_2.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group1_device)
+       | select('match', '^event\.[a-z0-9_]+_2.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
   var_scroll1_right_event: >-
-    {% for item in device_entities(var_group1_device) %}
-    {% set match = item | regex_findall(find='^event\..+_1.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group1_device)
+       | select('match', '^event\.[a-z0-9_]+_1.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
 
   var_button2_event: >-
-    {% for item in device_entities(var_group2_device) %}
-    {% set match = item | regex_findall(find='^event\..+_6.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group2_device)
+       | select('match', '^event\.[a-z0-9_]+_6.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
   var_scroll2_left_event: >-
-    {% for item in device_entities(var_group2_device) %}
-    {% set match = item | regex_findall(find='^event\..+_5.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group2_device)
+       | select('match', '^event\.[a-z0-9_]+_5.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
   var_scroll2_right_event: >-
-    {% for item in device_entities(var_group2_device) %}
-    {% set match = item | regex_findall(find='^event\..+_4.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group2_device)
+       | select('match', '^event\.[a-z0-9_]+_4.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
 
   var_button3_event: >-
-    {% for item in device_entities(var_group3_device) %}
-    {% set match = item | regex_findall(find='^event\..+_9.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group3_device)
+       | select('match', '^event\.[a-z0-9_]+_9.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
   var_scroll3_left_event: >-
-    {% for item in device_entities(var_group3_device) %}
-    {% set match = item | regex_findall(find='^event\..+_8.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group3_device)
+       | select('match', '^event\.[a-z0-9_]+_8.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
   var_scroll3_right_event: >-
-    {% for item in device_entities(var_group3_device) %}
-    {% set match = item | regex_findall(find='^event\..+_7.*$') %}
-    {% if (match | length) > 0 %}
-      {{ match[0] }}
-    {% endif %}
-    {% endfor %}
+    {{ device_entities(var_group3_device)
+       | select('match', '^event\.[a-z0-9_]+_7.*$')
+       | list
+       | first
+       | default('event.invalid_entity_id') }}
 
   var_remote_event: >-
-    {% if var_remote_device != '' %}
-      {% for item in device_entities(var_remote_device) %}
-      {% set match = item | regex_findall(find='^event\..+_1.*$') %}
-      {% if (match | length) > 0 %}
-        {{ match[0] }}
-      {% endif %}
-      {% endfor %}
+    {% if var_remote_device %}
+      {{ device_entities(var_remote_device)
+         | select('match', '^event\.[a-z0-9_]+_1.*$')
+         | list
+         | first
+         | default('') }}
     {% endif %}
 
 # ===================================================================
