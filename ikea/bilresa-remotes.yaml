@@ -339,8 +339,8 @@ condition:
          new_state.state not in ['unknown', 'unavailable'] and
          (old_state.state != new_state.state or
           old_state.attributes.event_type | default('') != new_state.attributes.event_type | default('') or
-          (old_state.attributes.totalNumberOfPressesCounted | default(0) | int(default=0)) !=
-          (new_state.attributes.totalNumberOfPressesCounted | default(0) | int(default=0))) }}
+          (old_state.attributes.totalNumberOfPressesCounted | default(0) | int) !=
+          (new_state.attributes.totalNumberOfPressesCounted | default(0) | int)) }}
 
 # ===================================================================
 # ACTIONS
