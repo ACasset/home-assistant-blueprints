@@ -359,11 +359,11 @@ action:
         {{ new_state.attributes.event_type | default('') if new_state is not none else '' }}
       press_count: >-
         {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
-        {{ (new_state.attributes.totalNumberOfPressesCounted | default(new_state.state, true) | int(1)) if new_state is not none else 1 }}
+        {{ (new_state.attributes.totalNumberOfPressesCounted | default(new_state.state) | int(1)) if new_state is not none else 1 }}
       multi_press_count: >-
         {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
         {% set event_type = new_state.attributes.event_type | default('') if new_state is not none else '' %}
-        {% set counted = (new_state.attributes.totalNumberOfPressesCounted | default(new_state.state, true) | int(1)) if new_state is not none else 1 %}
+        {% set counted = (new_state.attributes.totalNumberOfPressesCounted | default(new_state.state) | int(1)) if new_state is not none else 1 %}
         {% if event_type in ['multi_press_1', 'multi_press_2', 'multi_press_3'] %}
           {{ event_type[-1:] | int(0) }}
         {% elif event_type == 'multi_press_complete' %}
@@ -425,7 +425,7 @@ action:
           - action: light.turn_on
             target: !input group1_lights
             data:
-              brightness_step_pct: "{{ (scroll_step_pct | int) * (press_count | int(1)) }}"
+              brightness_step_pct: "{{ (scroll_step_pct | int) * (press_count | int) }}"
 
       - conditions:
           - condition: template
@@ -434,7 +434,7 @@ action:
           - action: light.turn_on
             target: !input group1_lights
             data:
-              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int(1)) }}"
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int) }}"
 
       # =============================================
       # Group 2 - Dimmer Actions
@@ -486,7 +486,7 @@ action:
           - action: light.turn_on
             target: !input group2_lights
             data:
-              brightness_step_pct: "{{ (scroll_step_pct | int) * (press_count | int(1)) }}"
+              brightness_step_pct: "{{ (scroll_step_pct | int) * (press_count | int) }}"
 
       - conditions:
           - condition: template
@@ -495,7 +495,7 @@ action:
           - action: light.turn_on
             target: !input group2_lights
             data:
-              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int(1)) }}"
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int) }}"
 
       # =============================================
       # Group 3 - Dimmer Actions
@@ -547,7 +547,7 @@ action:
           - action: light.turn_on
             target: !input group3_lights
             data:
-              brightness_step_pct: "{{ (scroll_step_pct | int) * (press_count | int(1)) }}"
+              brightness_step_pct: "{{ (scroll_step_pct | int) * (press_count | int) }}"
 
       - conditions:
           - condition: template
@@ -556,7 +556,7 @@ action:
           - action: light.turn_on
             target: !input group3_lights
             data:
-              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int(1)) }}"
+              brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int) }}"
 
       # =============================================
       # Optional Remote Top Button - Turn On All Groups
