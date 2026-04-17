@@ -16,13 +16,16 @@ blueprint:
     * **Single click**: Turn on lights at brightness level 1
     * **Double click**: Turn on lights at brightness level 2
     * **Triple click**: Turn on lights at brightness level 3
+    * **Dimmer clicks transition**: Configurable transition time (default 2s)
     * **Scroll wheel right**: Increase brightness by configurable step %
     * **Scroll wheel left**: Decrease brightness by configurable step %
+    * **Scroll wheel mode**: Instant-like handling (one step when event state is `1`)
 
     ### Optional Remote
 
-    * **Single press**: Turn on all light groups
-    * **Long press**: Turn off all light groups
+    * **Top button**: 1/2/3 clicks turn on all light groups at brightness level 1/2/3
+    * **Bottom button**: Single click turns off all light groups
+    * **Remote clicks transition**: Uses same configurable transition time
 
   domain: automation
   homeassistant:
@@ -141,6 +144,19 @@ blueprint:
               unit_of_measurement: "%"
               mode: slider
 
+        click_transition_s:
+          name: Click Transition (seconds)
+          description: >
+            Transition time used for dimmer and remote click actions.
+          default: 2
+          selector:
+            number:
+              min: 0
+              max: 10
+              step: 0.1
+              unit_of_measurement: "s"
+              mode: slider
+
     remote_setup:
       name: 🎮 Optional Remote
       description: >
@@ -151,7 +167,8 @@ blueprint:
           name: Remote - Device (optional)
           description: >
             Select an optional IKEA BILRESA device.
-            Single press turns on all lights, long press turns off all lights.
+            Top button (1/2/3 clicks) turns on all lights with brightness level 1/2/3.
+            Bottom button (single click) turns off all lights.
             Leave empty if not using a remote.
           default: ""
           selector:
@@ -223,10 +240,21 @@ trigger_variables:
        | first
        | default('event.invalid_group3_scroll_right') }}
 
-  var_remote_event: >-
+  # BILRESA dual-button numbering pattern in event entity suffixes:
+  # top button => ..._1, bottom button => ..._2.
+  var_remote_top_event: >-
     {% if var_remote_device %}
       {{ device_entities(var_remote_device)
-         | select('match', '^event\.[a-z0-9_]+_3(?:$|_.*$)')
+         | select('match', '^event\.[a-z0-9_]+_1(?:$|_.*$)')
+         | list
+         | first
+         | default('') }}
+    {% endif %}
+
+  var_remote_bottom_event: >-
+    {% if var_remote_device %}
+      {{ device_entities(var_remote_device)
+         | select('match', '^event\.[a-z0-9_]+_2(?:$|_.*$)')
          | list
          | first
          | default('') }}
@@ -286,10 +314,15 @@ trigger:
       entity_id: "{{ var_scroll3_right_event | trim }}"
   # Optional remote (uses state_changed event to safely handle empty entity)
   - platform: event
-    id: remote
+    id: remote_top
     event_type: state_changed
     event_data:
-      entity_id: "{{ var_remote_event | trim }}"
+      entity_id: "{{ var_remote_top_event | trim }}"
+  - platform: event
+    id: remote_bottom
+    event_type: state_changed
+    event_data:
+      entity_id: "{{ var_remote_bottom_event | trim }}"
 
 # ===================================================================
 # CONDITIONS
@@ -315,10 +348,17 @@ action:
       trigger_id: "{{ trigger.id }}"
       group2_target: !input group2_lights
       group3_target: !input group3_lights
+      brightness_level_1: !input brightness_1
+      brightness_level_2: !input brightness_2
+      brightness_level_3: !input brightness_3
       press_type: >-
-        {% set ns = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
-        {{ ns.attributes.event_type | default('') if ns is not none else '' }}
+        {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
+        {{ new_state.attributes.event_type | default('') if new_state is not none else '' }}
+      new_state_value: >-
+        {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
+        {{ new_state.state | default('') if new_state is not none else '' }}
       scroll_step_pct: !input scroll_step
+      click_transition_s: !input click_transition_s
 
   - choose:
       # =============================================
@@ -332,6 +372,7 @@ action:
             target: !input group1_lights
             data:
               brightness_pct: !input brightness_1
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -341,6 +382,7 @@ action:
             target: !input group1_lights
             data:
               brightness_pct: !input brightness_2
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -350,6 +392,7 @@ action:
             target: !input group1_lights
             data:
               brightness_pct: !input brightness_3
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -363,7 +406,7 @@ action:
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'scroll1_right' }}"
+            value_template: "{{ trigger_id == 'scroll1_right' and new_state_value == '1' }}"
         sequence:
           - action: light.turn_on
             target: !input group1_lights
@@ -372,7 +415,7 @@ action:
 
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'scroll1_left' }}"
+            value_template: "{{ trigger_id == 'scroll1_left' and new_state_value == '1' }}"
         sequence:
           - action: light.turn_on
             target: !input group1_lights
@@ -390,6 +433,7 @@ action:
             target: !input group2_lights
             data:
               brightness_pct: !input brightness_1
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -399,6 +443,7 @@ action:
             target: !input group2_lights
             data:
               brightness_pct: !input brightness_2
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -408,6 +453,7 @@ action:
             target: !input group2_lights
             data:
               brightness_pct: !input brightness_3
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -421,7 +467,7 @@ action:
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ group2_target | length > 0 and trigger_id == 'scroll2_right' }}"
+            value_template: "{{ group2_target | length > 0 and trigger_id == 'scroll2_right' and new_state_value == '1' }}"
         sequence:
           - action: light.turn_on
             target: !input group2_lights
@@ -430,7 +476,7 @@ action:
 
       - conditions:
           - condition: template
-            value_template: "{{ group2_target | length > 0 and trigger_id == 'scroll2_left' }}"
+            value_template: "{{ group2_target | length > 0 and trigger_id == 'scroll2_left' and new_state_value == '1' }}"
         sequence:
           - action: light.turn_on
             target: !input group2_lights
@@ -448,6 +494,7 @@ action:
             target: !input group3_lights
             data:
               brightness_pct: !input brightness_1
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -457,6 +504,7 @@ action:
             target: !input group3_lights
             data:
               brightness_pct: !input brightness_2
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -466,6 +514,7 @@ action:
             target: !input group3_lights
             data:
               brightness_pct: !input brightness_3
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -479,7 +528,7 @@ action:
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ group3_target | length > 0 and trigger_id == 'scroll3_right' }}"
+            value_template: "{{ group3_target | length > 0 and trigger_id == 'scroll3_right' and new_state_value == '1' }}"
         sequence:
           - action: light.turn_on
             target: !input group3_lights
@@ -488,7 +537,7 @@ action:
 
       - conditions:
           - condition: template
-            value_template: "{{ group3_target | length > 0 and trigger_id == 'scroll3_left' }}"
+            value_template: "{{ group3_target | length > 0 and trigger_id == 'scroll3_left' and new_state_value == '1' }}"
         sequence:
           - action: light.turn_on
             target: !input group3_lights
@@ -496,45 +545,69 @@ action:
               brightness_step_pct: "{{ -1 * (scroll_step_pct | int) }}"
 
       # =============================================
-      # Optional Remote - Turn On All Groups
+      # Optional Remote Top Button - Turn On All Groups
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'remote' and press_type == 'multi_press_1' }}"
+            value_template: "{{ trigger_id == 'remote_top' and press_type in ['multi_press_1', 'multi_press_2', 'multi_press_3'] }}"
         sequence:
+          - variables:
+              remote_top_brightness_pct: >-
+                {% if press_type == 'multi_press_1' %}
+                  {{ brightness_level_1 }}
+                {% elif press_type == 'multi_press_2' %}
+                  {{ brightness_level_2 }}
+                {% else %}
+                  {{ brightness_level_3 }}
+                {% endif %}
           - action: light.turn_on
             target: !input group1_lights
+            data:
+              brightness_pct: "{{ remote_top_brightness_pct | int }}"
+              transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group2_target | length > 0 }}"
             then:
               - action: light.turn_on
                 target: !input group2_lights
+                data:
+                  brightness_pct: "{{ remote_top_brightness_pct | int }}"
+                  transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group3_target | length > 0 }}"
             then:
               - action: light.turn_on
                 target: !input group3_lights
+                data:
+                  brightness_pct: "{{ remote_top_brightness_pct | int }}"
+                  transition: "{{ click_transition_s | float }}"
 
       # =============================================
-      # Optional Remote - Turn Off All Groups
+      # Optional Remote Bottom Button - Turn Off All Groups
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'remote' and press_type == 'long_press' }}"
+            value_template: "{{ trigger_id == 'remote_bottom' and press_type == 'multi_press_1' }}"
         sequence:
           - action: light.turn_off
             target: !input group1_lights
+            data:
+              transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group2_target | length > 0 }}"
             then:
               - action: light.turn_off
                 target: !input group2_lights
+                data:
+                  transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group3_target | length > 0 }}"
             then:
               - action: light.turn_off
                 target: !input group3_lights
+                data:
+                  transition: "{{ click_transition_s | float }}"
