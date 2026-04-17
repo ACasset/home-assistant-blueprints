@@ -23,7 +23,7 @@ blueprint:
 
     ### Optional Remote
 
-    * **Top button**: 1/2/3 clicks turn on all light groups at brightness level 1/2/3
+    * **Top button**: 1/2 clicks turn on all light groups at remote brightness level 1/2
     * **Bottom button**: Single click turns off all light groups
     * **Remote clicks transition**: Uses same configurable transition time
 
@@ -167,7 +167,7 @@ blueprint:
           name: Remote - Device (optional)
           description: >
             Select an optional IKEA BILRESA device.
-            Top button (1/2/3 clicks) turns on all lights with brightness level 1/2/3.
+            Top button (1/2 clicks) turns on all lights with remote brightness level 1/2.
             Bottom button (single click) turns off all lights.
             Leave empty if not using a remote.
           default: ""
@@ -176,6 +176,30 @@ blueprint:
               filter:
                 manufacturer: IKEA of Sweden
                 model: BILRESA dual button
+
+        remote_brightness_1:
+          name: Remote Brightness Level 1 (single click)
+          description: Brightness percentage applied on optional remote single click.
+          default: 50
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+
+        remote_brightness_2:
+          name: Remote Brightness Level 2 (double click)
+          description: Brightness percentage applied on optional remote double click.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
 
 trigger_variables:
   var_scroll_wheel_device: !input scroll_wheel_device
@@ -351,9 +375,8 @@ action:
       trigger_id: "{{ trigger.id }}"
       group2_target: !input group2_lights
       group3_target: !input group3_lights
-      brightness_level_1: !input brightness_1
-      brightness_level_2: !input brightness_2
-      brightness_level_3: !input brightness_3
+      remote_brightness_level_1: !input remote_brightness_1
+      remote_brightness_level_2: !input remote_brightness_2
       press_type: >-
         {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
         {{ new_state.attributes.event_type | default('') if new_state is not none else '' }}
@@ -563,16 +586,14 @@ action:
       # =============================================
       - conditions:
           - condition: template
-            value_template: "{{ trigger_id == 'remote_top' and multi_press_count in [1, 2, 3] }}"
+            value_template: "{{ trigger_id == 'remote_top' and multi_press_count in [1, 2] }}"
         sequence:
           - variables:
               remote_top_brightness_pct: >-
                 {% if multi_press_count == 1 %}
-                  {{ brightness_level_1 }}
-                {% elif multi_press_count == 2 %}
-                  {{ brightness_level_2 }}
+                  {{ remote_brightness_level_1 }}
                 {% else %}
-                  {{ brightness_level_3 }}
+                  {{ remote_brightness_level_2 }}
                 {% endif %}
           - action: light.turn_on
             target: !input group1_lights
