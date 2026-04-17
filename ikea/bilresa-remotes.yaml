@@ -352,11 +352,11 @@ action:
       brightness_level_2: !input brightness_2
       brightness_level_3: !input brightness_3
       press_type: >-
-        {% set ns = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
-        {{ ns.attributes.event_type | default('') if ns is not none else '' }}
+        {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
+        {{ new_state.attributes.event_type | default('') if new_state is not none else '' }}
       new_state_value: >-
-        {% set ns = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
-        {{ ns.state | default('') if ns is not none else '' }}
+        {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
+        {{ new_state.state | default('') if new_state is not none else '' }}
       scroll_step_pct: !input scroll_step
       click_transition_s: !input click_transition_s
 
@@ -372,7 +372,7 @@ action:
             target: !input group1_lights
             data:
               brightness_pct: !input brightness_1
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -382,7 +382,7 @@ action:
             target: !input group1_lights
             data:
               brightness_pct: !input brightness_2
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -392,7 +392,7 @@ action:
             target: !input group1_lights
             data:
               brightness_pct: !input brightness_3
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -433,7 +433,7 @@ action:
             target: !input group2_lights
             data:
               brightness_pct: !input brightness_1
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -443,7 +443,7 @@ action:
             target: !input group2_lights
             data:
               brightness_pct: !input brightness_2
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -453,7 +453,7 @@ action:
             target: !input group2_lights
             data:
               brightness_pct: !input brightness_3
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -494,7 +494,7 @@ action:
             target: !input group3_lights
             data:
               brightness_pct: !input brightness_1
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -504,7 +504,7 @@ action:
             target: !input group3_lights
             data:
               brightness_pct: !input brightness_2
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -514,7 +514,7 @@ action:
             target: !input group3_lights
             data:
               brightness_pct: !input brightness_3
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
 
       - conditions:
           - condition: template
@@ -564,7 +564,7 @@ action:
             target: !input group1_lights
             data:
               brightness_pct: "{{ remote_top_brightness_pct | int }}"
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group2_target | length > 0 }}"
@@ -573,7 +573,7 @@ action:
                 target: !input group2_lights
                 data:
                   brightness_pct: "{{ remote_top_brightness_pct | int }}"
-                  transition: "{{ click_transition_s | float(2) }}"
+                  transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group3_target | length > 0 }}"
@@ -582,7 +582,7 @@ action:
                 target: !input group3_lights
                 data:
                   brightness_pct: "{{ remote_top_brightness_pct | int }}"
-                  transition: "{{ click_transition_s | float(2) }}"
+                  transition: "{{ click_transition_s | float }}"
 
       # =============================================
       # Optional Remote Bottom Button - Turn Off All Groups
@@ -594,7 +594,7 @@ action:
           - action: light.turn_off
             target: !input group1_lights
             data:
-              transition: "{{ click_transition_s | float(2) }}"
+              transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group2_target | length > 0 }}"
@@ -602,7 +602,7 @@ action:
               - action: light.turn_off
                 target: !input group2_lights
                 data:
-                  transition: "{{ click_transition_s | float(2) }}"
+                  transition: "{{ click_transition_s | float }}"
           - if:
               - condition: template
                 value_template: "{{ group3_target | length > 0 }}"
@@ -610,4 +610,4 @@ action:
               - action: light.turn_off
                 target: !input group3_lights
                 data:
-                  transition: "{{ click_transition_s | float(2) }}"
+                  transition: "{{ click_transition_s | float }}"
