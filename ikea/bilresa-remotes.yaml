@@ -8,9 +8,10 @@ blueprint:
 
     ## Features
 
-    Blueprint for IKEA BILRESA scroll wheel dimmer with preset brightness levels for 3 light groups.
+    Blueprint for IKEA BILRESA scroll wheel dimmer with preset brightness levels for 3 light groups,
+    and optional media player control per group.
 
-    ### Dimmer Behavior (per group)
+    ### Dimmer Behavior (per light group)
 
     * **Long press**: Turn off lights
     * **Single click**: Turn on lights at brightness level 1
@@ -20,6 +21,15 @@ blueprint:
     * **Scroll wheel right**: Increase brightness by configurable step %
     * **Scroll wheel left**: Decrease brightness by configurable step %
     * **Scroll wheel mode**: Instant-like handling (one step when event state is `1`)
+
+    ### Dimmer Behavior (per media player group)
+
+    * **Long press**: Stop playback
+    * **Single click**: Set volume to level 1
+    * **Double click**: Set volume to level 2
+    * **Triple click**: Set volume to level 3
+    * **Scroll wheel right**: Next track
+    * **Scroll wheel left**: Previous track
 
     ### Optional Remote
 
@@ -155,6 +165,83 @@ blueprint:
               max: 10
               step: 0.1
               unit_of_measurement: "s"
+              mode: slider
+
+    media_players_setup:
+      name: 🎵 Media Players
+      description: >
+        Optionally assign a media player to each dimmer group.
+        Clicks set volume levels, long press stops playback,
+        scroll right skips to next track, scroll left to previous.
+      collapsed: true
+      input:
+        group1_media_player:
+          name: Group 1 - Media Player
+          description: >
+            Select a media player for group 1 (optional).
+            Leave empty if not used.
+          default: {}
+          selector:
+            target:
+              entity:
+                domain: media_player
+
+        group2_media_player:
+          name: Group 2 - Media Player
+          description: >
+            Select a media player for group 2 (optional).
+            Leave empty if not used.
+          default: {}
+          selector:
+            target:
+              entity:
+                domain: media_player
+
+        group3_media_player:
+          name: Group 3 - Media Player
+          description: >
+            Select a media player for group 3 (optional).
+            Leave empty if not used.
+          default: {}
+          selector:
+            target:
+              entity:
+                domain: media_player
+
+        volume_1:
+          name: Volume Level 1 (single click)
+          description: Volume percentage applied on single click.
+          default: 30
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+
+        volume_2:
+          name: Volume Level 2 (double click)
+          description: Volume percentage applied on double click.
+          default: 60
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+
+        volume_3:
+          name: Volume Level 3 (triple click)
+          description: Volume percentage applied on triple click.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
               mode: slider
 
     remote_setup:
@@ -375,8 +462,14 @@ action:
       trigger_id: "{{ trigger.id }}"
       group2_target: !input group2_lights
       group3_target: !input group3_lights
+      group1_media_player_target: !input group1_media_player
+      group2_media_player_target: !input group2_media_player
+      group3_media_player_target: !input group3_media_player
       remote_brightness_level_1: !input remote_brightness_1
       remote_brightness_level_2: !input remote_brightness_2
+      volume_level_1: !input volume_1
+      volume_level_2: !input volume_2
+      volume_level_3: !input volume_3
       press_type: >-
         {% set new_state = trigger.event.data.new_state if trigger.event and trigger.event.data is defined else none %}
         {{ new_state.attributes.event_type | default('') if new_state is not none else '' }}
@@ -460,6 +553,60 @@ action:
               brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int) }}"
 
       # =============================================
+      # Group 1 - Media Player Actions
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ group1_media_player_target | length > 0 and trigger_id == 'button1' and multi_press_count == 1 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group1_media_player
+            data:
+              volume_level: "{{ volume_level_1 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group1_media_player_target | length > 0 and trigger_id == 'button1' and multi_press_count == 2 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group1_media_player
+            data:
+              volume_level: "{{ volume_level_2 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group1_media_player_target | length > 0 and trigger_id == 'button1' and multi_press_count == 3 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group1_media_player
+            data:
+              volume_level: "{{ volume_level_3 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group1_media_player_target | length > 0 and trigger_id == 'button1' and press_type == 'long_press' }}"
+        sequence:
+          - action: media_player.media_stop
+            target: !input group1_media_player
+
+      # =============================================
+      # Group 1 - Media Player Scroll Wheel
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ group1_media_player_target | length > 0 and trigger_id == 'scroll1_right' }}"
+        sequence:
+          - action: media_player.media_next_track
+            target: !input group1_media_player
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group1_media_player_target | length > 0 and trigger_id == 'scroll1_left' }}"
+        sequence:
+          - action: media_player.media_previous_track
+            target: !input group1_media_player
+
+      # =============================================
       # Group 2 - Dimmer Actions
       # =============================================
       - conditions:
@@ -521,6 +668,60 @@ action:
               brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int) }}"
 
       # =============================================
+      # Group 2 - Media Player Actions
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ group2_media_player_target | length > 0 and trigger_id == 'button2' and multi_press_count == 1 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group2_media_player
+            data:
+              volume_level: "{{ volume_level_1 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group2_media_player_target | length > 0 and trigger_id == 'button2' and multi_press_count == 2 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group2_media_player
+            data:
+              volume_level: "{{ volume_level_2 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group2_media_player_target | length > 0 and trigger_id == 'button2' and multi_press_count == 3 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group2_media_player
+            data:
+              volume_level: "{{ volume_level_3 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group2_media_player_target | length > 0 and trigger_id == 'button2' and press_type == 'long_press' }}"
+        sequence:
+          - action: media_player.media_stop
+            target: !input group2_media_player
+
+      # =============================================
+      # Group 2 - Media Player Scroll Wheel
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ group2_media_player_target | length > 0 and trigger_id == 'scroll2_right' }}"
+        sequence:
+          - action: media_player.media_next_track
+            target: !input group2_media_player
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group2_media_player_target | length > 0 and trigger_id == 'scroll2_left' }}"
+        sequence:
+          - action: media_player.media_previous_track
+            target: !input group2_media_player
+
+      # =============================================
       # Group 3 - Dimmer Actions
       # =============================================
       - conditions:
@@ -580,6 +781,60 @@ action:
             target: !input group3_lights
             data:
               brightness_step_pct: "{{ -1 * (scroll_step_pct | int) * (press_count | int) }}"
+
+      # =============================================
+      # Group 3 - Media Player Actions
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ group3_media_player_target | length > 0 and trigger_id == 'button3' and multi_press_count == 1 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group3_media_player
+            data:
+              volume_level: "{{ volume_level_1 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group3_media_player_target | length > 0 and trigger_id == 'button3' and multi_press_count == 2 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group3_media_player
+            data:
+              volume_level: "{{ volume_level_2 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group3_media_player_target | length > 0 and trigger_id == 'button3' and multi_press_count == 3 }}"
+        sequence:
+          - action: media_player.volume_set
+            target: !input group3_media_player
+            data:
+              volume_level: "{{ volume_level_3 | float / 100 }}"
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group3_media_player_target | length > 0 and trigger_id == 'button3' and press_type == 'long_press' }}"
+        sequence:
+          - action: media_player.media_stop
+            target: !input group3_media_player
+
+      # =============================================
+      # Group 3 - Media Player Scroll Wheel
+      # =============================================
+      - conditions:
+          - condition: template
+            value_template: "{{ group3_media_player_target | length > 0 and trigger_id == 'scroll3_right' }}"
+        sequence:
+          - action: media_player.media_next_track
+            target: !input group3_media_player
+
+      - conditions:
+          - condition: template
+            value_template: "{{ group3_media_player_target | length > 0 and trigger_id == 'scroll3_left' }}"
+        sequence:
+          - action: media_player.media_previous_track
+            target: !input group3_media_player
 
       # =============================================
       # Optional Remote Top Button - Turn On All Groups
